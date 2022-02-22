@@ -1,18 +1,14 @@
 import {
   fromEvent,
-  mergeMap,
   switchMap,
   takeUntil,
   tap,
-  toArray,
-  map,
-  of,
 } from "rxjs";
 
 const mapElem = document.querySelector("#map");
 const targetElem = document.querySelector("#target");
 const resetBtn = document.querySelector("#reset");
-const scrollStep = 0.01;
+const scrollStep = 0.05;
 
 export const setMap = () => {
   /* drag */
