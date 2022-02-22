@@ -11,37 +11,63 @@ const resetBtn = document.querySelector("#reset");
 const scrollStep = 0.05;
 
 export const setMap = () => {
-  /* drag */
-  const mouseup = fromEvent(mapElem, "mouseup").pipe(
-    tap(() => mapElem.classList.toggle("map__cursor--cross"))
+
+  /* touch */
+  const touch = fromEvent(mapElem, "touchstart", {passive: true}).pipe(
+    switchMap(event => {
+
+      const start = { x: event.touches[0].pageX, y: event.touches[0].pageY };
+
+      // change cursor when moving element
+      mapElem.classList.toggle("map__cursor--cross");
+      const coordinates = getCoordinates(targetElem);
+        
+      return fromEvent(mapElem, "touchmove", {passive: true}).pipe(
+        tap(event => {
+          setCoordinates(
+            {
+              x: coordinates.x + event.touches[0].pageX - start.x,
+              y: coordinates.y + event.touches[0].pageY - start.y,
+            },
+            targetElem
+          );
+        }),
+        takeUntil(fromEvent(mapElem, "touchend", {passive: true}).pipe(
+          tap(() => mapElem.classList.toggle("map__cursor--cross"))
+        ))
+      )
+    })
   );
 
-  const mousemove = (start) => {
-    // change cursor when moving element
-    mapElem.classList.toggle("map__cursor--cross");
-
-    return fromEvent(mapElem, "mousemove").pipe(
-      tap((event) => {
-        const coordinates = getCoordinates(targetElem);
-        setCoordinates(
-          {
-            x: coordinates.x + event.offsetX - start.x,
-            y: coordinates.y + event.offsetY - start.y,
-          },
-          targetElem
-        );
-      }),
-      takeUntil(mouseup)
-    );
-  };
-
+  /* drag */
   const drag = fromEvent(mapElem, "mousedown").pipe(
     // detect mousemove
-    switchMap((event) => mousemove({ x: event.offsetX, y: event.offsetY }))
+    switchMap((event) => {
+      const start = { x: event.offsetX, y: event.offsetY };
+
+      // change cursor when moving element
+      mapElem.classList.toggle("map__cursor--cross");
+
+      return fromEvent(mapElem, "mousemove").pipe(
+        tap((event) => {
+          const coordinates = getCoordinates(targetElem);
+          setCoordinates(
+            {
+              x: coordinates.x + event.offsetX - start.x,
+              y: coordinates.y + event.offsetY - start.y,
+            },
+            targetElem
+          );
+        }),
+        takeUntil(fromEvent(mapElem, "mouseup").pipe(
+          tap(() => mapElem.classList.toggle("map__cursor--cross"))
+        ))
+      );
+    })
   );
 
   /* scroll */
-  const scroll = fromEvent(mapElem, "wheel").pipe(
+  const scroll = fromEvent(mapElem, "wheel", { passive: true }).pipe(
     tap((event) => {
       const scale = getScale(targetElem);
       setScale(
@@ -52,7 +78,7 @@ export const setMap = () => {
   );
 
   /* subscribe */
-  drag.subscribe();
+  isTouchDevice() ? touch.subscribe() : drag.subscribe();
   scroll.subscribe();
 
   /* reset */
@@ -66,7 +92,7 @@ const getCoordinates = (elem) => {
   let x = 0;
   let y = 0;
   if (elem.style.transform) {
-    const [xArr, yArr] = [...elem.style.transform.matchAll(/-?\d+/g)];
+    const [xArr, yArr] = [...elem.style.transform.matchAll(/-?\d+\.?\d*/g)];
     return { x: +xArr[0], y: +yArr[0] };
   }
   return { x, y };
@@ -97,3 +123,9 @@ const setScale = (scale, elem) => {
   const scaleStr = `scale(${scale})`;
   elem.style.transform = otherTransform + " " + scaleStr;
 };
+
+function isTouchDevice() {
+  return (('ontouchstart' in window) ||
+     (navigator.maxTouchPoints > 0) ||
+     (navigator.msMaxTouchPoints > 0));
+}
