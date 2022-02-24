@@ -21,6 +21,26 @@ export const setMap = () => {
       // change cursor when moving element
       mapElem.classList.add("map__cursor--cross");
       const coordinates = getCoordinates(targetElem);
+
+      
+      if (event.touches.length === 2) {
+        const originalDistance = getDistance(event);
+        const originalScale = getScale(targetElem);
+
+
+        return fromEvent(mapElem, "touchmove", {passive: true}).pipe(
+          tap(event => {
+            const distance = getDistance(event)
+
+            console.log(event.touches)
+            
+            setScale(originalScale * (distance/originalDistance), targetElem);  // O * (D + d) / D
+          }),
+          takeUntil(fromEvent(mapElem, "touchend", {passive: true}).pipe(
+            tap(() => mapElem.classList.remove("map__cursor--cross"))
+          ))
+        )
+      }
         
       return fromEvent(mapElem, "touchmove", {passive: true}).pipe(
         tap(event => {
@@ -131,3 +151,7 @@ function isTouchDevice() {
      (navigator.maxTouchPoints > 0) ||
      (navigator.msMaxTouchPoints > 0));
 }
+
+function getDistance(event) {
+  return Math.hypot(event.touches[0].pageX - event.touches[1].pageX, event.touches[0].pageY - event.touches[1].pageY);
+}1
