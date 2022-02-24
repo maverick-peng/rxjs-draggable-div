@@ -19,7 +19,7 @@ export const setMap = () => {
       const start = { x: event.touches[0].pageX, y: event.touches[0].pageY };
 
       // change cursor when moving element
-      mapElem.classList.toggle("map__cursor--cross");
+      mapElem.classList.add("map__cursor--cross");
       const coordinates = getCoordinates(targetElem);
         
       return fromEvent(mapElem, "touchmove", {passive: true}).pipe(
@@ -33,7 +33,7 @@ export const setMap = () => {
           );
         }),
         takeUntil(fromEvent(mapElem, "touchend", {passive: true}).pipe(
-          tap(() => mapElem.classList.toggle("map__cursor--cross"))
+          tap(() => mapElem.classList.remove("map__cursor--cross"))
         ))
       )
     })
@@ -46,7 +46,7 @@ export const setMap = () => {
       const start = { x: event.offsetX, y: event.offsetY };
 
       // change cursor when moving element
-      mapElem.classList.toggle("map__cursor--cross");
+      mapElem.classList.add("map__cursor--cross");
 
       return fromEvent(mapElem, "mousemove").pipe(
         tap((event) => {
@@ -60,7 +60,7 @@ export const setMap = () => {
           );
         }),
         takeUntil(fromEvent(mapElem, "mouseup").pipe(
-          tap(() => mapElem.classList.toggle("map__cursor--cross"))
+          tap(() => mapElem.classList.remove("map__cursor--cross"))
         ))
       );
     })
@@ -93,7 +93,9 @@ const getCoordinates = (elem) => {
   let y = 0;
   if (elem.style.transform) {
     const [xArr, yArr] = [...elem.style.transform.matchAll(/-?\d+\.?\d*/g)];
-    return { x: +xArr[0], y: +yArr[0] };
+    if (xArr && yArr){
+      return { x: +xArr[0], y: +yArr[0] };
+    }
   }
   return { x, y };
 };
