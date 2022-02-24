@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vite App</title>
-</head>
-
-<body>
-  <div id="app">
-    <!-- draggable and zoomable map -->
-    <div id="map" class="map">
-      <div id="target" class="map__seats" style="transform: translate(0px, 5px) scale(1.2)">
-        <button class="seat-01">seat-01</button>
+  <body>
+    <div id="app">
+      <!-- draggable and zoomable map -->
+      <div id="map" class="map">
+        <div
+          id="target"
+          class="map__seats"
+          style="
+            transform: translate(0px, 5px) scale(1.2);
+            transform-origin: 50% 50%;
+          "
+        >
+          <button class="seat-01">seat-01</button>
+        </div>
       </div>
+      <!-- reset -->
+      <button id="reset" class="btn">Reset</button>
     </div>
-    <!-- reset -->
-    <button id="reset" class="btn">Reset</button>
-  </div>
-  <script type="module" src="./main.js"></script>
-</body>
-
+    <script type="module" src="./main.js"></script>
+  </body>
 </html>
