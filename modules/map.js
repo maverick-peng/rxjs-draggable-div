@@ -4,8 +4,14 @@ const mapElem = document.querySelector("#map");
 const targetElem = document.querySelector("#target");
 const resetBtn = document.querySelector("#reset");
 const scrollStep = 0.01;
+const minScale = 0.1;
+const maxScale = 2;
+const animationDelay = 0;
 
 export const setMap = () => {
+  /* animation */
+  mapElem.style["animation-delay"] = animationDelay + "s";
+
   /* touch */
   const touch = fromEvent(mapElem, "touchstart", { passive: true }).pipe(
     switchMap((event) => {
@@ -15,6 +21,7 @@ export const setMap = () => {
       mapElem.classList.add("map__cursor--cross");
       const coordinates = getCoordinates(targetElem);
 
+      // pinch zoom
       if (event.touches.length === 2) {
         const originalDistance = getDistance(event);
         const originalScale = getScale(targetElem);
@@ -23,9 +30,13 @@ export const setMap = () => {
           tap((event) => {
             const distance = getDistance(event);
 
-            console.log(event.touches);
+            const scale = originalScale * (distance / originalDistance);
+            if (scale > maxScale || scale < minScale) {
+              console.log("Reached boundary!", scale);
+              return;
+            }
 
-            setScale(originalScale * (distance / originalDistance), targetElem); // O * (D + d) / D
+            setScale(scale, targetElem);
           }),
           takeUntil(
             fromEvent(mapElem, "touchend", { passive: true }).pipe(
@@ -66,8 +77,6 @@ export const setMap = () => {
 
       return fromEvent(mapElem, "mousemove").pipe(
         tap((event) => {
-          console.log({ x: event.clientX, y: event.clientY });
-          // console.log(coordinates);
           setCoordinates(
             {
               x: coordinates.x + event.clientX - start.x,
@@ -89,10 +98,13 @@ export const setMap = () => {
   const scroll = fromEvent(mapElem, "wheel", { passive: true }).pipe(
     tap((event) => {
       const scale = getScale(targetElem);
-      setScale(
-        event.deltaY > 0 ? scale + scrollStep : scale - scrollStep,
-        targetElem
-      );
+      const changedScale =
+        event.deltaY > 0 ? scale + scrollStep : scale - scrollStep;
+      if (changedScale > maxScale || changedScale < minScale) {
+        return;
+      }
+
+      setScale(changedScale, targetElem);
     })
   );
 
